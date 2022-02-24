@@ -13,7 +13,7 @@ describe('NFTStaking', () => {
         expect(await nftStaking.nft()).to.be.equal(nft.address);
     });
 
-    it('populateRarityNumberByTokenId fails when called by non owner', async () => {
+    it('populateTierNumberByTokenId fails when called by non owner', async () => {
         const [, nonOwner] = await ethers.getSigners();
         const NFTStaking = await ethers.getContractFactory("NFTStaking");
         const NFT = await ethers.getContractFactory("NFT");
@@ -26,16 +26,16 @@ describe('NFTStaking', () => {
             3333
         ];
 
-        const rarityNumbers = [
+        const tierNumbers = [
             big(1),
             big(2),
             big(3)
         ];
 
         try {
-            await nftStaking.connect(nonOwner).populateRarityNumberByTokenId(tokenIds, rarityNumbers);
+            await nftStaking.connect(nonOwner).populateTierNumberByTokenId(tokenIds, tierNumbers);
             assert.fail(
-                "populateRarityNumberByTokenId successfully called by non owner"
+                "populateTierNumberByTokenId successfully called by non owner"
             );
         } catch (e) {
             expect(e.message).to.include(
@@ -44,7 +44,7 @@ describe('NFTStaking', () => {
         }
     });
 
-    it('populateRarityNumberByTokenId fails when with mismatched lengths', async () => {
+    it('populateTierNumberByTokenId fails when with mismatched lengths', async () => {
         const NFTStaking = await ethers.getContractFactory("NFTStaking");
         const NFT = await ethers.getContractFactory("NFT");
         const nft = await NFT.deploy();
@@ -56,24 +56,24 @@ describe('NFTStaking', () => {
             3333
         ];
 
-        const rarityNumbers = [
+        const tierNumbers = [
             big(1),
             big(2),
         ];
 
         try {
-            await nftStaking.populateRarityNumberByTokenId(tokenIds, rarityNumbers);
+            await nftStaking.populateTierNumberByTokenId(tokenIds, tierNumbers);
             assert.fail(
-                "populateRarityNumberByTokenId successfully called with mismatched lengths"
+                "populateTierNumberByTokenId successfully called with mismatched lengths"
             );
         } catch (e) {
             expect(e.message).to.include(
-                "NFTStaking::populateRarityNumberTokenId: invalid array lengths"
+                "NFTStaking::populateTierNumberTokenId: invalid array lengths"
             );
         }
     });
 
-    it('successfully call populateRarityNumberByTokenId ', async () => {
+    it('successfully call populateTierNumberByTokenId ', async () => {
         const NFTStaking = await ethers.getContractFactory("NFTStaking");
         const NFT = await ethers.getContractFactory("NFT");
         const nft = await NFT.deploy();
@@ -85,31 +85,31 @@ describe('NFTStaking', () => {
             3333
         ];
 
-        const rarityNumbers = [
+        const tierNumbers = [
             big(1),
             big(2),
             big(3)
         ];
 
-        await nftStaking.populateRarityNumberByTokenId(tokenIds, rarityNumbers);
+        await nftStaking.populateTierNumberByTokenId(tokenIds, tierNumbers);
 
         tokenIds.forEach(
             async (
                 tokenId,
                 idx
-            ) => expect(await nftStaking.rarityNumberByTokenId(tokenId))
-                .to.be.equal(rarityNumbers[idx])
+            ) => expect(await nftStaking.tierNumberByTokenId(tokenId))
+                .to.be.equal(tierNumbers[idx])
         );
     });
 
-    it('populatePointsPerDayByRarityNumber fails when called by non owner', async () => {
+    it('populatePointsPerDayByTierNumber fails when called by non owner', async () => {
         const [, nonOwner] = await ethers.getSigners();
         const NFTStaking = await ethers.getContractFactory("NFTStaking");
         const NFT = await ethers.getContractFactory("NFT");
         const nft = await NFT.deploy();
         const nftStaking = await NFTStaking.deploy(nft.address);
 
-        const rarityNumbers = [
+        const tierNumbers = [
             1,
             2,
             3
@@ -122,9 +122,9 @@ describe('NFTStaking', () => {
         ];
 
         try {
-            await nftStaking.connect(nonOwner).populatePointsPerDayByRarityNumber(rarityNumbers, pointsPerDay);
+            await nftStaking.connect(nonOwner).populatePointsPerDayByTierNumber(tierNumbers, pointsPerDay);
             assert.fail(
-                "populatePointsPerDayByRarityNumber successfully called by non owner"
+                "populatePointsPerDayByTierNumber successfully called by non owner"
             );
         } catch (e) {
             expect(e.message).to.include(
@@ -133,13 +133,13 @@ describe('NFTStaking', () => {
         }
     });
 
-    it('populatePointsPerDayByRarityNumber fails when with mismatched lengths', async () => {
+    it('populatePointsPerDayByTierNumber fails when with mismatched lengths', async () => {
         const NFTStaking = await ethers.getContractFactory("NFTStaking");
         const NFT = await ethers.getContractFactory("NFT");
         const nft = await NFT.deploy();
         const nftStaking = await NFTStaking.deploy(nft.address);
 
-        const rarityNumbers = [
+        const tierNumbers = [
             1,
             2,
             3
@@ -151,24 +151,24 @@ describe('NFTStaking', () => {
         ];
 
         try {
-            await nftStaking.populatePointsPerDayByRarityNumber(rarityNumbers, pointsPerDay);
+            await nftStaking.populatePointsPerDayByTierNumber(tierNumbers, pointsPerDay);
             assert.fail(
-                "populatePointsPerDayByRarityNumber successfully called with mismatched lengths"
+                "populatePointsPerDayByTierNumber successfully called with mismatched lengths"
             );
         } catch (e) {
             expect(e.message).to.include(
-                "NFTStaking::populatePointsPerDayByRarityNumber: invalid array lengths"
+                "NFTStaking::populatePointsPerDayByTierNumber: invalid array lengths"
             );
         }
     });
 
-    it('successfully call populatePointsPerDayByRarityNumber ', async () => {
+    it('successfully call populatePointsPerDayByTierNumber ', async () => {
         const NFTStaking = await ethers.getContractFactory("NFTStaking");
         const NFT = await ethers.getContractFactory("NFT");
         const nft = await NFT.deploy();
         const nftStaking = await NFTStaking.deploy(nft.address);
 
-        const rarityNumbers = [
+        const tierNumbers = [
             1,
             2,
             3
@@ -180,13 +180,13 @@ describe('NFTStaking', () => {
             big(300)
         ];
 
-        await nftStaking.populatePointsPerDayByRarityNumber(rarityNumbers, pointsPerDay);
+        await nftStaking.populatePointsPerDayByTierNumber(tierNumbers, pointsPerDay);
 
-        rarityNumbers.forEach(
+        tierNumbers.forEach(
             async (
-                rarityNumber,
+                tierNumber,
                 idx
-            ) => expect(await nftStaking.pointsPerDayByRarityNumber(rarityNumber))
+            ) => expect(await nftStaking.pointsPerDayByTierNumber(tierNumber))
                 .to.be.equal(pointsPerDay[idx])
         );
     });
@@ -248,8 +248,8 @@ describe('NFTStaking', () => {
 
         const tokenId = big(0);
 
-        await nftStaking.populateRarityNumberByTokenId([0], [1]);
-        await nftStaking.populatePointsPerDayByRarityNumber([1], [200]);
+        await nftStaking.populateTierNumberByTokenId([0], [1]);
+        await nftStaking.populatePointsPerDayByTierNumber([1], [200]);
 
         await nft.mint(addr1.address);
         await nft.approve(nftStaking.address, tokenId);
@@ -276,8 +276,8 @@ describe('NFTStaking', () => {
 
         const tokenId = big(0);
 
-        await nftStaking.populateRarityNumberByTokenId([0], [1]);
-        await nftStaking.populatePointsPerDayByRarityNumber([1], [200]);
+        await nftStaking.populateTierNumberByTokenId([0], [1]);
+        await nftStaking.populatePointsPerDayByTierNumber([1], [200]);
 
         await nft.mint(addr1.address);
         await nft.approve(nftStaking.address, tokenId);
@@ -310,8 +310,8 @@ describe('NFTStaking', () => {
 
         const tokenId = big(0);
 
-        await nftStaking.populateRarityNumberByTokenId([0], [1]);
-        await nftStaking.populatePointsPerDayByRarityNumber([1], [200]);
+        await nftStaking.populateTierNumberByTokenId([0], [1]);
+        await nftStaking.populatePointsPerDayByTierNumber([1], [200]);
 
         await nft.mint(addr1.address);
         await nft.approve(nftStaking.address, tokenId);
@@ -347,8 +347,8 @@ describe('NFTStaking', () => {
 
         const tokenIds = [big(0), big(1)];
 
-        await nftStaking.populateRarityNumberByTokenId([0, 1], [1, 2]);
-        await nftStaking.populatePointsPerDayByRarityNumber([1, 2], [200, 400]);
+        await nftStaking.populateTierNumberByTokenId([0, 1], [1, 2]);
+        await nftStaking.populatePointsPerDayByTierNumber([1, 2], [200, 400]);
 
         await nft.mint(addr1.address);
         await nft.mint(addr1.address);

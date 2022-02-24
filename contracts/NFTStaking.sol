@@ -9,7 +9,7 @@ import { Point } from "./Point.sol";
  * @dev NFT Staking contract allows staking of NFT to earn rewards in point
  * token.
  *
- * Each NFT is has a specific rarity associated with it that allows the
+ * Each NFT is has a specific tier associated with it that allows the
  * staker accrue specific amount of Point tokens per day.
  *
  * The staker can claim their Point rewards every 24 hours and unstaking
@@ -36,11 +36,11 @@ contract NFTStaking is Ownable {
     // mapping of users addresses to the list of stakes.
     mapping(address => Stake[]) public stakesByUser;
 
-    // mapping of token ids to rarity numbers.
-    mapping(uint256 => uint256) public rarityNumberByTokenId;
+    // mapping of token ids to tier numbers.
+    mapping(uint256 => uint256) public tierNumberByTokenId;
 
-    // mapping of rarity numbers to Points rewards per day.
-    mapping(uint256 => uint256) public pointsPerDayByRarityNumber;
+    // mapping of tier numbers to Points rewards per day.
+    mapping(uint256 => uint256) public pointsPerDayByTierNumber;
 
     event Staked(address user, uint256 tokenId);
 
@@ -52,51 +52,51 @@ contract NFTStaking is Ownable {
     }
 
     /*
-     * @dev Allows populating the mapping {rarityNumberByTokenId} by accepting
-     * lists of {tokenIds} and {rarityNumbers}.
+     * @dev Allows populating the mapping {tierNumberByTokenId} by accepting
+     * lists of {tokenIds} and {tierNumbers}.
      *
      * Requirements:
      * - Can only called by owner.
      * - Both lists must be of the same length.
      **/
-    function populateRarityNumberByTokenId(
+    function populateTierNumberByTokenId(
         uint256[] calldata tokenIds,
-        uint256[] calldata rarityNumbers
+        uint256[] calldata tierNumbers
     )
         external
         onlyOwner
     {
         require(
-            tokenIds.length == rarityNumbers.length,
-            "NFTStaking::populateRarityNumberTokenId: invalid array lengths"
+            tokenIds.length == tierNumbers.length,
+            "NFTStaking::populateTierNumberTokenId: invalid array lengths"
         );
 
         for (uint256 i = 0; i < tokenIds.length; i++)
-            rarityNumberByTokenId[tokenIds[i]] = rarityNumbers[i];
+            tierNumberByTokenId[tokenIds[i]] = tierNumbers[i];
     }
 
     /*
-     * @dev Allows populating the mapping {pointsPerDayByRarityNumber} by accepting
-     * lists of {rarityNumbers} and {pointsPerDay}.
+     * @dev Allows populating the mapping {pointsPerDayByTierNumber} by accepting
+     * lists of {tierNumbers} and {pointsPerDay}.
      *
      * Requirements:
      * - Can only called by owner.
      * - Both lists must be of the same length.
      **/
-    function populatePointsPerDayByRarityNumber(
-        uint256[] calldata rarityNumbers,
+    function populatePointsPerDayByTierNumber(
+        uint256[] calldata tierNumbers,
         uint256[] calldata pointsPerDay
     )
         external
         onlyOwner
     {
         require(
-            rarityNumbers.length == pointsPerDay.length,
-            "NFTStaking::populatePointsPerDayByRarityNumber: invalid array lengths"
+            tierNumbers.length == pointsPerDay.length,
+            "NFTStaking::populatePointsPerDayByTierNumber: invalid array lengths"
         );
 
-        for (uint256 i = 0; i < rarityNumbers.length; i++)
-            pointsPerDayByRarityNumber[rarityNumbers[i]] = pointsPerDay[i];
+        for (uint256 i = 0; i < tierNumbers.length; i++)
+            pointsPerDayByTierNumber[tierNumbers[i]] = pointsPerDay[i];
     }
 
     /*
@@ -232,8 +232,8 @@ contract NFTStaking is Ownable {
 
         for (uint256 i = 0; i < stakes.length; i++) {
             Stake memory _stake = stakes[i];
-            uint256 rarityNumber = rarityNumberByTokenId[_stake.tokenId];
-            uint256 pointsPerDay = pointsPerDayByRarityNumber[rarityNumber];
+            uint256 tierNumber = tierNumberByTokenId[_stake.tokenId];
+            uint256 pointsPerDay = pointsPerDayByTierNumber[tierNumber];
 
             totalPointsPerDay += pointsPerDay;
         }
@@ -250,8 +250,8 @@ contract NFTStaking is Ownable {
         view
         returns (uint256)
     {
-        uint256 rarityNumber = rarityNumberByTokenId[_stake.tokenId];
-        uint256 pointsPerDay = pointsPerDayByRarityNumber[rarityNumber];
+        uint256 tierNumber = tierNumberByTokenId[_stake.tokenId];
+        uint256 pointsPerDay = pointsPerDayByTierNumber[tierNumber];
 
         return
             (block.timestamp - _stake.lastPointsClaimedAt) * pointsPerDay / 24 hours;
