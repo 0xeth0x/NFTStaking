@@ -191,6 +191,28 @@ describe('NFTStaking', () => {
         );
     });
 
+    it('should not stake if id is not approved', async () => {
+        const [addr1] = await ethers.getSigners();
+        const NFTStaking = await ethers.getContractFactory("NFTStaking");
+        const NFT = await ethers.getContractFactory("NFT");
+        const nft = await NFT.deploy();
+        const nftStaking = await NFTStaking.deploy(nft.address);
+
+        const tokenId = big(0);
+        await nft.mint(addr1.address);
+
+        try {
+            await nftStaking.stake(tokenId);
+            assert.fail(
+                "staked with non approved is"
+            );
+        } catch (e) {
+            expect(e.message).to.include(
+                "NFTStaking::stake: staking contract is not approved for the given token id"
+            );
+        }
+    });
+
     it('should successfully stake', async () => {
         const [addr1] = await ethers.getSigners();
         const NFTStaking = await ethers.getContractFactory("NFTStaking");
@@ -241,6 +263,40 @@ describe('NFTStaking', () => {
 
         expect(await point.balanceOf(addr1.address))
             .to.be.equal(big(200));
+    });
+
+    it('should fail to unstake token with wrong id', async () => {
+        const [addr1] = await ethers.getSigners();
+        const NFTStaking = await ethers.getContractFactory("NFTStaking");
+        const NFT = await ethers.getContractFactory("NFT");
+        const Point = await ethers.getContractFactory("Point");
+        const nft = await NFT.deploy();
+        const nftStaking = await NFTStaking.deploy(nft.address);
+        const point = await Point.attach(await nftStaking.point());
+
+        const tokenId = big(0);
+
+        await nftStaking.populateRarityNumberByTokenId([0], [1]);
+        await nftStaking.populatePointsPerDayByRarityNumber([1], [200]);
+
+        await nft.mint(addr1.address);
+        await nft.approve(nftStaking.address, tokenId);
+
+        await nftStaking.stake(tokenId);
+
+        await ethers.provider.send("evm_increaseTime", [86400]);
+        await ethers.provider.send("evm_mine");
+
+        try {
+            await nftStaking.unstakeById(big(1));
+            assert.fail(
+                "unstaked wrong token id"
+            );
+        } catch (e) {
+            expect(e.message).to.include(
+                "NFTStaking::unstake: invalid token id provided"
+            );
+        }
     });
 
     it('should unstake by id', async () => {
