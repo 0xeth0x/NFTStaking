@@ -33,6 +33,16 @@ contract NFTStaking is Ownable {
         uint256 lastPointsClaimedAt;
     }
 
+    struct TokenIdAndTier {
+        uint256 tokenId;
+        uint256 tier;
+    }
+
+    struct TierAndPointsPerDay {
+        uint256 tier;
+        uint256 pointsPerDay;
+    }
+
     // mapping of users addresses to the list of stakes.
     mapping(address => Stake[]) public stakesByUser;
 
@@ -60,19 +70,13 @@ contract NFTStaking is Ownable {
      * - Both lists must be of the same length.
      **/
     function populateTierNumberByTokenId(
-        uint256[] calldata tokenIds,
-        uint256[] calldata tierNumbers
+        TokenIdAndTier[] calldata tokenIdAndTier
     )
         external
         onlyOwner
     {
-        require(
-            tokenIds.length == tierNumbers.length,
-            "NFTStaking::populateTierNumberTokenId: invalid array lengths"
-        );
-
-        for (uint256 i = 0; i < tokenIds.length; i++)
-            tierNumberByTokenId[tokenIds[i]] = tierNumbers[i];
+        for (uint256 i = 0; i < tokenIdAndTier.length; i++)
+            tierNumberByTokenId[tokenIdAndTier[i].tokenId] = tokenIdAndTier[i].tier;
     }
 
     /*
@@ -84,19 +88,14 @@ contract NFTStaking is Ownable {
      * - Both lists must be of the same length.
      **/
     function populatePointsPerDayByTierNumber(
-        uint256[] calldata tierNumbers,
-        uint256[] calldata pointsPerDay
+        TierAndPointsPerDay[] calldata tierAndPointsPerDay
     )
         external
         onlyOwner
     {
-        require(
-            tierNumbers.length == pointsPerDay.length,
-            "NFTStaking::populatePointsPerDayByTierNumber: invalid array lengths"
-        );
-
-        for (uint256 i = 0; i < tierNumbers.length; i++)
-            pointsPerDayByTierNumber[tierNumbers[i]] = pointsPerDay[i];
+        for (uint256 i = 0; i < tierAndPointsPerDay.length; i++)
+            pointsPerDayByTierNumber[tierAndPointsPerDay[i].tier]
+                = tierAndPointsPerDay[i].pointsPerDay;
     }
 
     /*
