@@ -8,12 +8,17 @@ const {ethers} = require("hardhat");
 
 async function main() {
     console.log("*** DEPLOYING ***");
+    const NFT = await ethers.getContractFactory("NFT");
     const NFTStaking = await ethers.getContractFactory("NFTStaking");
-    const NFT_ADDRESS = "";
-    const nftStaking = await NFTStaking.deploy(NFT_ADDRESS);
+    const nft = await NFT.deploy();
+    const nftStaking = await NFTStaking.deploy(nft.address);
 
+    console.log("NFT address: ", nft.address)
     console.log("NFT Staking Address: ", nftStaking.address);
 
+    const [owner] = await ethers.getSigners();
+    await nft.mint(owner.address);
+    await nft.mint(owner.address);
     console.log("*** DONE ***");
 }
 
