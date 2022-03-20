@@ -108,9 +108,10 @@ contract NFTStaking is Ownable {
      * - The token being staked with tokenId {id} must be approved to
      * the contract.
      **/
-    function stake(uint256 id) external {
+    function stake(uint256 id) public {
         require(
-            nft.getApproved(id) == address(this),
+            nft.getApproved(id) == address(this)
+            || nft.isApprovedForAll(msg.sender, address(this)),
             "NFTStaking::stake: staking contract is not approved for the given token id"
         );
 
@@ -128,6 +129,11 @@ contract NFTStaking is Ownable {
         );
 
         emit Staked(msg.sender, id);
+    }
+
+    function stakeAll(uint256[] calldata nftIds) external {
+        for (uint256 i = 0; i < nftIds.length; i++)
+            stake(nftIds[i]);
     }
 
     /*
@@ -253,6 +259,8 @@ contract NFTStaking is Ownable {
         uint256 pointsPerDay = pointsPerDayByTierNumber[tierNumber];
 
         return
-            (block.timestamp - _stake.lastPointsClaimedAt) * pointsPerDay / 24 hours;
+            (block.timestamp - _stake.lastPointsClaimedAt)
+            * pointsPerDay
+            / 24 hours;
     }
 }
