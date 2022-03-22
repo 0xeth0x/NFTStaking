@@ -5,6 +5,7 @@
 // Runtime Environment's members available in the global scope.
 const hre = require("hardhat");
 const {ethers} = require("hardhat");
+const big = num => ethers.BigNumber.from(num);
 
 async function main() {
     console.log("*** DEPLOYING ***");
@@ -20,6 +21,15 @@ async function main() {
     await nft.mint(owner.address);
     await nft.mint(owner.address);
     console.log("*** DONE ***");
+
+    await nftStaking.populateTierNumberByTokenId([
+        [0, 1], [1, 2]
+    ]);
+
+    await nftStaking.populatePointsPerDayByTierNumber([
+        [1, big(200).mul(big(10).pow(18))],
+        [2, big(800).mul(big(10).pow(18))]
+    ]);
 }
 
 // We recommend this pattern to be able to use async/await everywhere
