@@ -241,6 +241,18 @@ contract NFTStaking is Ownable {
                 / 24 hours;
     }
 
+    function getAllClaimablePointsByUser(address user)
+        external
+        view
+        returns (uint256 amount)
+    {
+        Stake[] storage _stakes = stakesByUser[user];
+        uint256 length = _stakes.length;
+
+        for (uint256 i = 0; i < length; i++)
+            amount += getClaimablePointsByStake(_stakes[i]);
+    }
+
     function getTierByTokenId(uint256 tokenId)
         public
         view
