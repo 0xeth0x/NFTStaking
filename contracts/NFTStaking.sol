@@ -33,21 +33,15 @@ contract NFTStaking is Ownable {
         uint256 lastPointsClaimedAt;
     }
 
-    struct TokenIdAndTier {
-        uint256 tokenId;
-        uint256 tier;
-    }
-
     struct TierAndPointsPerDay {
         uint256 tier;
         uint256 pointsPerDay;
     }
 
+    bytes public tiersByTokenId;
+
     // mapping of users addresses to the list of stakes.
     mapping(address => Stake[]) public stakesByUser;
-
-    // mapping of token ids to tier numbers.
-    mapping(uint256 => uint256) public tierNumberByTokenId;
 
     // mapping of tier numbers to Points rewards per day.
     mapping(uint256 => uint256) public pointsPerDayByTierNumber;
@@ -56,27 +50,10 @@ contract NFTStaking is Ownable {
 
     event Unstaked(address user, uint256 tokenId);
 
-    constructor(IERC721 _nft) {
+    constructor(IERC721 _nft, bytes memory _tiersByTokenId) {
         nft = _nft;
         point = new Point(address(this));
-    }
-
-    /*
-     * @dev Allows populating the mapping {tierNumberByTokenId} by accepting
-     * lists of {tokenIds} and {tierNumbers}.
-     *
-     * Requirements:
-     * - Can only called by owner.
-     * - Both lists must be of the same length.
-     **/
-    function populateTierNumberByTokenId(
-        TokenIdAndTier[] calldata tokenIdAndTier
-    )
-        external
-        onlyOwner
-    {
-        for (uint256 i = 0; i < tokenIdAndTier.length; i++)
-            tierNumberByTokenId[tokenIdAndTier[i].tokenId] = tokenIdAndTier[i].tier;
+        tiersByTokenId = _tiersByTokenId;
     }
 
     /*
@@ -237,7 +214,7 @@ contract NFTStaking is Ownable {
 
         for (uint256 i = 0; i < stakes.length; i++) {
             Stake memory _stake = stakes[i];
-            uint256 tierNumber = tierNumberByTokenId[_stake.tokenId];
+            uint256 tierNumber = getTierByTokenId(_stake.tokenId);
             uint256 pointsPerDay = pointsPerDayByTierNumber[tierNumber];
 
             totalPointsPerDay += pointsPerDay;
@@ -255,12 +232,50 @@ contract NFTStaking is Ownable {
         view
         returns (uint256)
     {
-        uint256 tierNumber = tierNumberByTokenId[_stake.tokenId];
+        uint256 tierNumber = getTierByTokenId(_stake.tokenId);
         uint256 pointsPerDay = pointsPerDayByTierNumber[tierNumber];
 
         return
             (block.timestamp - _stake.lastPointsClaimedAt)
-            * pointsPerDay
-            / 24 hours;
+                * pointsPerDay
+                / 24 hours;
+    }
+
+    function getTierByTokenId(uint256 tokenId)
+        public
+        view
+        returns (uint8 tierId)
+    {
+        uint256 slotData;
+        bytes memory slotMem = new bytes(32);
+
+        assembly {
+            mstore(
+                add(slotMem, 32),
+                tiersByTokenId.slot
+            )
+
+            slotData := sload(
+                add(
+                    keccak256(
+                        add(slotMem, 32),
+                        32
+                    ),
+                    div(
+                        sub(tokenId, 1),
+                        32
+                    )
+                )
+            )
+        }
+
+        tierId = uint8(
+            slotData >> (
+                248 - (
+                    ((tokenId - 1) % 32)
+                    * 8
+                )
+            )
+        );
     }
 }

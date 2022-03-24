@@ -4,7 +4,7 @@ pragma solidity 0.8.9;
 import { ERC721Enumerable, ERC721 } from "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 
 contract NFT is ERC721Enumerable {
-    uint256 public id;
+    uint256 public id = 1;
     constructor() ERC721("NFT", "NFT") {}
 
     function mint(address to) external {
